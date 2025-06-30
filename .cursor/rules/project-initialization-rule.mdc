@@ -1,0 +1,62 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 프로젝트 초기화 표준 워크플로우
+
+이 문서는 새로운 백엔드 프로젝트를 시작할 때 따르는 표준 절차를 정의합니다. 모든 신규 프로젝트는 이 규칙을 따라야 합니다.
+
+## 1단계: 프로젝트 설계 및 문서화
+
+본격적인 개발에 앞서 다음 설계 문서를 `docs/` 디렉토리에 생성하여 프로젝트의 기반을 명확히 합니다.
+
+*   **기술 스택 정의 (`docs/tech-stack.md`)**: 사용할 언어, 프레임워크, 데이터베이스, 테스트 도구 등 모든 기술 요소를 명시합니다.
+*   **도메인 모델 설계 (`docs/domain-spec.md`)**: `User`, `Schedule` 등 핵심 엔티티의 속성, 관계, 제약 조건을 상세히 설계합니다.
+*   **API 명세 설계 (`docs/api-spec.md`)**: MVP 범위에 포함될 모든 API 엔드포인트의 요청/응답 형식, HTTP 메소드, URL을 정의합니다.
+*   **개발 로드맵 수립 (`tasks/`)**: 전체 개발 과정을 단계별(`Step`) 및 하위 단계별(`Sub-step`)로 나누어 `tasks/step-n-*.md` 형식의 파일로 구체적인 작업 계획을 수립합니다.
+
+## 2단계: Git 저장소 초기화 및 문서 커밋
+
+1.  **Git 초기화**: `git init` 명령으로 로컬 저장소를 생성합니다.
+2.  **브랜치 생성**: `main` (안정 버전)과 `develop` (개발 진행) 브랜치를 생성합니다.
+3.  **원격 저장소 연결**: GitHub 등 원격 저장소를 생성하고 `origin`으로 연결합니다.
+4.  **초기 문서 커밋**: 1단계에서 작성한 모든 설계 및 계획 문서를 `develop` 브랜치에 첫 커밋으로 푸시합니다.
+    *   커밋 메시지: `docs: 프로젝트 설계 및 개발 계획 수립`
+
+## 3단계: Spring Boot 프로젝트 생성
+
+`curl`과 Spring Initializr를 사용하여 `docs/tech-stack.md`에 정의된 사양에 맞는 Spring Boot 프로젝트를 생성합니다.
+
+**예시 명령어:**
+```bash
+# tech-stack.md에 명시된 의존성에 맞춰 수정
+curl https://start.spring.io/starter.zip -o project.zip \
+-d type=gradle-project \
+-d language=kotlin \
+-d platformVersion=3.3.1 \
+-d jvmVersion=21 \
+-d groupId=com.planit \
+-d artifactId=planit-backend \
+-d name=planit-backend \
+-d description="PlanIt Backend API" \
+-d packageName=com.planit \
+-d dependencies=web,data-jpa,h2,postgresql,validation,testcontainers
+```
+생성된 zip 파일의 압축을 풀어 프로젝트에 통합합니다.
+
+## 4단계: 빌드 환경 검증 및 초기 설정
+
+1.  **JDK 환경 확인**: `sdkman` 등을 사용하여 프로젝트에 맞는 버전의 JDK (예: Java 21)가 설치되고 `JAVA_HOME`이 올바르게 설정되었는지 확인합니다. WSL 환경에서는 경로 문제 방지를 위해 WSL 네이티브 JDK 사용을 권장합니다.
+2.  **최초 빌드**: `./gradlew build` 또는 `./gradlew clean build` 명령으로 프로젝트가 성공적으로 빌드되는지 확인합니다.
+3.  **Testcontainers 설정**: 초기 테스트 실행 시 Testcontainers가 Docker 데몬에 연결되지 못하는 문제가 발생할 수 있습니다. Docker가 실행 중인지, 필요한 설정이 완료되었는지 확인합니다. 문제가 지속되면 초기 빌드 성공을 위해 관련 테스트를 임시 비활성화할 수 있습니다.
+4.  **초기화 커밋**: 빌드가 성공하고 기본 설정이 완료되면, 프로젝트 파일 전체를 커밋합니다.
+    *   커밋 메시지: `feat: Spring Boot 프로젝트 초기화 및 빌드 설정`
+
+## 5단계: 작업 상태 업데이트
+
+프로젝트 초기화가 완료되면 `tasks/step-1-foundation.md` 파일의 관련 하위 단계를 체크(`[x]`)하여 진행 상황을 업데이트합니다.
+
+---
+이 규칙은 AI 에이전트가 신규 프로젝트를 시작할 때 일관된 작업 흐름을 유지하도록 돕습니다.
+
