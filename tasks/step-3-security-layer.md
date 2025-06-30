@@ -6,7 +6,7 @@
 
 ### Sub-steps
 
-- [ ] **Sub-step 3.1: Spring Security 및 OAuth2 기본 설정**
+- [x] **Step 3.1: Spring Security 및 OAuth2 기본 설정**
   - **Feature 브랜치**: `feature/security-oauth2-config`
   - **수행 내용**: SecurityFilterChain을 구성하여 정적 리소스 및 로그인 관련 URL 접근을 허용하고, 나머지 요청은 인증을 요구하도록 설정합니다.
   - **예상 커밋**: `feat(config): Spring Security 및 OAuth2 기본 설정`
