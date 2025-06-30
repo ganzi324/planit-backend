@@ -6,7 +6,7 @@
 
 ### Sub-steps
 
-- [ ] **Sub-step 2.1: 공통 엔티티 및 Enum 구현**
+- [x] **Sub-step 2.1: 공통 엔티티 및 Enum 구현**
   - **Feature 브랜치**: `feature/common-entities-enums`
   - **수행 내용**: `BaseEntity`, `UserProvider` Enum, `SchedulePriority` Enum 클래스를 구현합니다.
   - **예상 커밋**: `feat: BaseEntity 및 공통 Enum 클래스 구현`
