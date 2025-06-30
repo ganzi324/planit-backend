@@ -18,7 +18,7 @@
     1. `test(repository): UserRepository 슬라이스 테스트 추가`
     2. `feat(domain): User 엔티티 및 Repository 구현`
 
-- [ ] **Sub-step 2.3: Schedule 엔티티 및 Repository 구현**
+- [x] **Sub-step 2.3: Schedule 엔티티 및 Repository 구현**
   - **Feature 브랜치**: `feature/schedule-entity-and-repo`
   - **수행 내용**: `Schedule` 엔티티와 `ScheduleRepository` 인터페이스를 구현하고, `@DataJpaTest`로 검증합니다.
   - **예상 커밋**:
