@@ -6,7 +6,7 @@
 
 ### Sub-steps
 
-- [ ] **Sub-step 1.1: Gradle 프로젝트 생성 및 의존성 설정**
+- [x] **Sub-step 1.1: Gradle 프로젝트 생성 및 의존성 설정**
   - **수행 내용**: Spring Initializr를 통해 `tech-stack.md`에 명시된 Kotlin, Spring Boot 버전으로 Gradle 프로젝트를 생성하고, 필요한 모든 의존성을 `build.gradle.kts`에 추가합니다.
   - **예상 커밋**: `feat: 프로젝트 초기 설정 및 의존성 추가`
 
