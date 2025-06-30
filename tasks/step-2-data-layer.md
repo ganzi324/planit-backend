@@ -11,7 +11,7 @@
   - **수행 내용**: `BaseEntity`, `UserProvider` Enum, `SchedulePriority` Enum 클래스를 구현합니다.
   - **예상 커밋**: `feat: BaseEntity 및 공통 Enum 클래스 구현`
 
-- [ ] **Sub-step 2.2: User 엔티티 및 Repository 구현**
+- [x] **Sub-step 2.2: User 엔티티 및 Repository 구현**
   - **Feature 브랜치**: `feature/user-entity-and-repo`
   - **수행 내용**: `User` 엔티티와 `UserRepository` 인터페이스를 구현하고, `@DataJpaTest`로 검증합니다.
   - **예상 커밋**:

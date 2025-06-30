@@ -19,19 +19,27 @@ MVP 단계에서는 **JPA 엔티티와 도메인 엔티티를 통합한 모델**
 
 OAuth2를 통해 인증된 사용자 정보를 관리합니다.
 
-| 필드명      | 타입                  | 제약조건                        | 설명                                  |
-| :---------- | :-------------------- | :------------------------------ | :------------------------------------ |
-| `id`        | `Long`                | PK (BaseEntity)                 | 사용자 고유 식별자                    |
-| `name`        | `String`              | Not Null, `length=100`          | 사용자 이름                           |
-| `email`       | `String`              | Not Null, `length=255`, Unique  | 사용자 식별용 이메일                  |
-| `provider`    | `UserProvider` (Enum) | Not Null                        | OAuth2 제공자 (GOOGLE, GITHUB)        |
-| `schedules` | `List<Schedule>`      | 1:N 관계                        | 해당 유저가 작성한 모든 일정을 참조   |
-| `createdAt`   | `LocalDateTime`       | Not Null (BaseEntity)           | 생성 시간                             |
-| `updatedAt`   | `LocalDateTime`       | Not Null (BaseEntity)           | 수정 시간                             |
+| 필드명           | 타입                  | 제약조건                        | 설명                                       |
+| :--------------- | :-------------------- | :------------------------------ | :----------------------------------------- |
+| `id`             | `Long`                | PK (BaseEntity)                 | 사용자 고유 식별자                         |
+| `email`          | `String`              | Not Null, `length=50`           | 사용자 식별용 이메일                       |
+| `nickname`       | `String`              | Not Null, `length=30`           | 사용자 닉네임                              |
+| `provider`       | `UserProvider` (Enum) | Not Null                        | OAuth2 제공자 (GOOGLE, KAKAO, NAVER)       |
+| `providerId`     | `String`              | Not Null                        | 소셜 로그인 제공자가 부여한 고유 ID        |
+| `role`           | `Role` (Enum)         | Not Null                        | 사용자 권한 (USER, ADMIN)                  |
+| `profileImageUrl`| `String`              | Nullable                        | 프로필 이미지 URL                          |
+| `schedules`      | `List<Schedule>`      | 1:N 관계                        | 해당 유저가 작성한 모든 일정을 참조   |
+| `createdAt`      | `LocalDateTime`       | Not Null (BaseEntity)           | 생성 시간                                  |
+| `updatedAt`      | `LocalDateTime`       | Not Null (BaseEntity)           | 수정 시간                                  |
 
 ### `UserProvider` Enum
 *   `GOOGLE`
-*   `GITHUB`
+*   `KAKAO`
+*   `NAVER`
+
+### `Role` Enum
+*   `USER`
+*   `ADMIN`
 
 ---
 
