@@ -1,0 +1,129 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: Spring Boot Data 계층 슬라이스 테스팅 핵심 규칙 - @DataJpaTest 가이드라인
+globs: "**/src/test/**/*Repository*Test.java,**/test/**/*Repository*Test.java"
+alwaysApply: true
+---
+
+# Spring Boot Data 계층 슬라이스 테스팅 규칙
+
+## ⭐ 핵심 원칙
+
+### @DataJpaTest 사용 목적
+- **JPA Repository 계층만** 독립적으로 테스트
+- 인메모리 데이터베이스 자동 구성 (H2)
+- @Transactional 자동 적용 (테스트 후 롤백)
+- **Service, Controller 등 다른 계층 제외**
+
+### 필수 구성 요소
+```java
+@DataJpaTest
+class UserRepositorySliceTest {
+    @Autowired private TestEntityManager entityManager;
+    @Autowired private UserRepository userRepository;
+}
+```
+
+## 📋 테스트 대상 및 범위
+
+### ✅ 테스트해야 할 것들
+- **CRUD 연산**: save, findById, findAll, delete
+- **커스텀 쿼리**: @Query, 메서드 쿼리, Native Query  
+- **페이징/정렬**: Pageable, Sort 적용
+- **연관관계**: 지연/즉시 로딩, Fetch Join
+- **제약조건**: 유니크, NotNull, 외래키 제약
+- **동적 쿼리**: Specification, QueryDSL
+
+### ❌ 테스트하지 말아야 할 것들
+- 비즈니스 로직 (Service 계층 담당)
+- HTTP 요청/응답 (Controller 계층 담당)
+- 트랜잭션 관리 (Service 계층에서 통합테스트로)
+
+## 🏗️ 테스트 구조 규칙
+
+### 명명 규칙
+- **클래스명**: `{Entity}Repository + SliceTest`
+- **메서드명**: `{method}_{condition}_{expectedResult}`
+
+### Given-When-Then 패턴 준수
+```java
+@Test
+void findByEmail_whenEmailExists_shouldReturnUser() {
+    // Given - 테스트 데이터 준비
+    User user = createTestUser("홍길동", "hong@example.com");
+    
+    // When - 실제 테스트 실행
+    Optional<User> result = userRepository.findByEmail("hong@example.com");
+    
+    // Then - 결과 검증
+    assertThat(result).isPresent();
+    assertThat(result.get().getName()).isEqualTo("홍길동");
+}
+```
+
+## 🔧 데이터 관리 규칙
+
+### TestEntityManager 활용
+- **영속화**: `entityManager.persistAndFlush(entity)`
+- **컨텍스트 제어**: `entityManager.flush()`, `entityManager.clear()`
+- **테스트 데이터 격리**: 각 테스트 메서드는 독립적으로 실행
+
+### 테스트 데이터 생성 패턴
+```java
+// 헬퍼 메서드 활용
+private User createTestUser(String name, String email) {
+    return User.builder().name(name).email(email).build();
+}
+
+private User persistUser(String name, String email) {
+    return entityManager.persistAndFlush(createTestUser(name, email));
+}
+```
+
+## 🎯 핵심 테스트 패턴
+
+### CRUD 연산 검증
+- **저장**: ID 생성, 필드 값 확인
+- **조회**: 존재/비존재 시나리오 
+- **수정**: 변경 값 반영 확인
+- **삭제**: 삭제 후 조회 불가 확인
+
+### 커스텀 쿼리 검증
+- **@Query**: JPQL, Native Query 결과 검증
+- **메서드 쿼리**: Spring Data 파싱 결과 확인
+- **동적 쿼리**: Specification, QueryDSL 조건별 테스트
+
+### 연관관계 검증
+- **지연 로딩**: 필요 시점에 로딩 확인
+- **즉시 로딩**: Fetch Join 효과 검증
+- **N+1 문제**: 쿼리 발생 횟수 모니터링
+
+## ⚠️ 주의사항
+
+### 데이터베이스 설정
+- **기본**: H2 인메모리 DB 사용 (별도 설정 불필요)
+- **실제 DB 사용**: `@AutoConfigureTestDatabase(replace = NONE)`
+- **트랜잭션**: 각 테스트 후 자동 롤백 (격리 보장)
+
+### 성능 고려사항
+- **테스트 데이터**: 최소한으로 유지
+- **쿼리 최적화**: N+1 문제 방지 확인
+- **캐시**: 2차 캐시 사용 시 테스트 격리 주의
+
+## ✅ 체크리스트
+
+### 테스트 작성 시 확인사항
+- [ ] @DataJpaTest 어노테이션 사용
+- [ ] Repository 인터페이스만 테스트 대상
+- [ ] Given-When-Then 패턴 준수
+- [ ] 테스트 메서드명 명확성
+- [ ] 각 테스트 독립성 보장
+- [ ] 예외 상황 테스트 포함
+- [ ] 연관관계 동작 검증
+- [ ] 쿼리 최적화 확인
+
+

@@ -1,0 +1,161 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: Spring Boot Web 계층 슬라이스 테스팅 핵심 규칙 - @WebMvcTest 가이드라인
+globs: "**/src/test/**/*Controller*Test.java,**/test/**/*Controller*Test.java"
+alwaysApply: true
+---
+
+# Spring Boot Web 계층 슬라이스 테스팅 규칙
+
+## ⭐ 핵심 원칙
+
+### @WebMvcTest 사용 목적
+- **Controller 계층만** 독립적으로 테스트
+- Spring MVC 컴포넌트만 로드 (MockMvc 자동 구성)
+- **Service, Repository는 @MockBean으로 모킹**
+- HTTP 요청/응답 처리 로직 검증에 집중
+
+### 필수 구성 요소
+```java
+@WebMvcTest(UserController.class)
+class UserControllerSliceTest {
+    @Autowired private MockMvc mockMvc;
+    @MockBean private UserService userService;
+    @Autowired private ObjectMapper objectMapper;
+}
+```
+
+## 📋 테스트 대상 및 범위
+
+### ✅ 테스트해야 할 것들
+- **HTTP 메서드**: GET, POST, PUT, DELETE 요청 처리
+- **경로 매핑**: @RequestMapping, @PathVariable, @RequestParam
+- **요청/응답**: JSON 직렬화/역직렬화, HTTP 상태 코드
+- **유효성 검증**: @Valid, Bean Validation 어노테이션
+- **예외 처리**: @ExceptionHandler, @ControllerAdvice
+- **보안**: 인증/인가 (Spring Security 적용 시)
+
+### ❌ 테스트하지 말아야 할 것들
+- 비즈니스 로직 (Service 계층에서 단위 테스트)
+- 데이터베이스 연동 (Repository 계층에서 슬라이스 테스트)
+- 전체 통합 흐름 (통합 테스트에서 수행)
+
+## 🏗️ 테스트 구조 규칙
+
+### 명명 규칙
+- **클래스명**: `{Controller명} + SliceTest`
+- **메서드명**: `{httpMethod}_{endpoint}_{condition}_{expectedResult}`
+
+### Given-When-Then 패턴 (MockMvc 특화)
+```java
+@Test
+void getUser_whenUserExists_shouldReturnUser() throws Exception {
+    // Given - Mock 동작 정의
+    when(userService.findById(1L)).thenReturn(mockUser);
+    
+    // When & Then - HTTP 요청 수행 및 검증
+    mockMvc.perform(get("/api/users/{id}", 1L))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("홍길동"));
+}
+```
+
+## 🔧 MockMvc 사용 규칙
+
+### HTTP 요청 패턴
+- **GET**: `mockMvc.perform(get("/api/users/{id}", userId))`
+- **POST**: `mockMvc.perform(post("/api/users").content(json))`
+- **PUT**: `mockMvc.perform(put("/api/users/{id}", userId).content(json))`
+- **DELETE**: `mockMvc.perform(delete("/api/users/{id}", userId))`
+
+### 응답 검증 패턴
+- **상태 코드**: `.andExpect(status().isOk())`
+- **JSON 필드**: `.andExpect(jsonPath("$.name").value("홍길동"))`
+- **배열 크기**: `.andExpect(jsonPath("$.content.length()").value(5))`
+
+### 요청 헤더/파라미터
+```java
+mockMvc.perform(get("/api/users")
+    .param("page", "0")
+    .param("size", "10")
+    .header("Authorization", "Bearer token")
+    .contentType(MediaType.APPLICATION_JSON))
+```
+
+## 🎯 핵심 테스트 패턴
+
+### HTTP 메서드별 검증 포인트
+- **GET**: 상태 코드, 응답 데이터 구조, 쿼리 파라미터 처리
+- **POST**: 생성 성공(201), 요청 데이터 검증, 응답 데이터
+- **PUT**: 수정 성공(200), 부분 수정 로직, 존재하지 않는 리소스(404)
+- **DELETE**: 삭제 성공(204), 존재하지 않는 리소스 처리
+
+### 유효성 검증 테스트
+- **@Valid 어노테이션**: Bean Validation 규칙 적용 확인
+- **@RequestBody**: JSON 파싱 오류 처리
+- **@PathVariable**: 경로 변수 타입 변환 오류
+
+### 예외 처리 테스트
+- **비즈니스 예외**: Service에서 발생한 예외의 HTTP 응답 변환
+- **시스템 예외**: 예상치 못한 오류의 적절한 처리
+- **@ControllerAdvice**: 글로벌 예외 처리기 동작 확인
+
+## ⚠️ 주의사항
+
+### @MockBean 사용 규칙
+- **필수 의존성만**: Controller가 직접 사용하는 Service만 모킹
+- **Stubbing 완성도**: 모든 테스트 시나리오에 대한 Mock 동작 정의
+- **Verification**: 중요한 Service 메서드 호출 여부 검증
+
+### 테스트 격리
+- **각 테스트 독립성**: 테스트 간 Mock 상태 공유 방지
+- **@DirtiesContext**: 필요 시에만 사용 (성능 고려)
+- **테스트 순서**: 실행 순서에 의존하지 않도록 설계
+
+### 성능 고려사항
+- **특정 Controller만**: `@WebMvcTest(UserController.class)` 명시
+- **불필요한 설정 제외**: `excludeAutoConfiguration` 활용
+- **Mock 최소화**: 꼭 필요한 의존성만 모킹
+
+## ✅ 체크리스트
+
+### 테스트 작성 시 확인사항
+- [ ] @WebMvcTest 어노테이션 사용
+- [ ] 특정 Controller 클래스 명시
+- [ ] MockMvc 주입 및 활용
+- [ ] Service 계층 @MockBean 처리
+- [ ] HTTP 상태 코드 검증
+- [ ] 요청/응답 데이터 검증
+- [ ] 예외 상황 테스트 포함
+- [ ] Mock 동작 Verification
+- [ ] Given-When-Then 패턴 준수
+- [ ] 테스트 메서드명 명확성
+
+## 🚀 고급 패턴
+
+### 파일 업로드 테스트
+```java
+MockMultipartFile file = new MockMultipartFile("file", "test.txt", 
+    MediaType.TEXT_PLAIN_VALUE, "content".getBytes());
+mockMvc.perform(multipart("/api/files").file(file))
+```
+
+### 보안 테스트 (Spring Security)
+```java
+@WithMockUser(roles = "ADMIN")
+@Test
+void adminEndpoint_withAdminRole_shouldAllowAccess() throws Exception {
+    // 권한별 접근 제어 테스트
+}
+```
+
+### 페이징 응답 검증
+```java
+.andExpect(jsonPath("$.content").isArray())
+.andExpect(jsonPath("$.totalElements").value(100))
+.andExpect(jsonPath("$.number").value(0))
+```

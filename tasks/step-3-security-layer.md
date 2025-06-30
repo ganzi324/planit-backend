@@ -11,7 +11,7 @@
   - **수행 내용**: SecurityFilterChain을 구성하여 정적 리소스 및 로그인 관련 URL 접근을 허용하고, 나머지 요청은 인증을 요구하도록 설정합니다.
   - **예상 커밋**: `feat(config): Spring Security 및 OAuth2 기본 설정`
 
-- [ ] **Sub-step 3.2: Custom OAuth2UserService 및 인증 성공 로직 구현**
+- [x] **Sub-step 3.2: Custom OAuth2UserService 및 인증 성공 로직 구현**
   - **Feature 브랜치**: `feature/oauth2-user-service`
   - **수행 내용**: 소셜 로그인 성공 시, 사용자 정보를 받아 `UserRepository`를 통해 DB에 저장/업데이트하는 `CustomOAuth2UserService`를 구현합니다. 로그인 성공 후 JWT를 발급하는 핸들러를 추가합니다.
   - **예상 커밋**:
