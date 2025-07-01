@@ -18,7 +18,7 @@
     1. `test(service): CustomOAuth2UserService 단위 테스트 추가`
     2. `feat(auth): CustomOAuth2UserService 및 인증 성공 핸들러 구현`
 
-- [ ] **Sub-step 3.3: JWT 검증 필터 구현**
+- [x] **Sub-step 3.3: JWT 검증 필터 구현**
   - **Feature 브랜치**: `feature/jwt-authentication-filter`
   - **수행 내용**: 클라이언트가 API 요청 시 헤더에 담아 보낸 JWT를 검증하고, 유효할 경우 Spring Security 컨텍스트에 인증 정보를 등록하는 필터를 구현합니다.
   - **예상 커밋**:

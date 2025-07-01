@@ -1,24 +1,30 @@
 package com.planit.config
 
+import com.planit.auth.filter.JwtAuthenticationFilter
 import com.planit.auth.handler.OAuth2AuthenticationSuccessHandler
+import com.planit.auth.support.JwtProvider
 import com.planit.service.CustomOAuth2UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
     private val customOAuth2UserService: CustomOAuth2UserService,
-    private val oAuth2AuthenticationSuccessHandler: OAuth2AuthenticationSuccessHandler
+    private val oAuth2AuthenticationSuccessHandler: OAuth2AuthenticationSuccessHandler,
+    private val jwtProvider: JwtProvider
 ) {
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { it.disable() } // CSRF 보호 비활성화 (Stateless API)
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // 세션 비활성화
             .headers { headers ->
                 headers.frameOptions { it.sameOrigin() } // H2 Console 접근을 위한 설정
             }
@@ -34,6 +40,7 @@ class SecurityConfig(
                 }
                 oauth2.successHandler(oAuth2AuthenticationSuccessHandler)
             }
+            .addFilterBefore(JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }

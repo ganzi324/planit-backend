@@ -13,9 +13,10 @@ class JwtProviderTest(
     Given("JwtProvider가 주어졌을 때") {
         val userId = "testUser"
         val userEmail = "test@example.com"
+        val userRole = "ROLE_USER"
 
         When("토큰을 생성하면") {
-            val token = jwtProvider.createToken(userId, userEmail)
+            val token = jwtProvider.createToken(userId, userEmail, userRole)
 
             Then("토큰이 정상적으로 생성된다") {
                 token shouldNotBe null

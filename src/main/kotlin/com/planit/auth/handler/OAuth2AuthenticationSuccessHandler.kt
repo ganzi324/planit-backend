@@ -25,8 +25,12 @@ class OAuth2AuthenticationSuccessHandler(
         val principal = authentication.principal as OAuth2User
         val userId = authentication.name
         val email = principal.attributes["email"] as String
+        // 안전한 단일 권한 추출 (시스템에서 단일 권한만 사용)
+        val role = authentication.authorities
+            .singleOrNull()?.authority
+            ?: throw IllegalStateException("User must have exactly one authority, but found: ${authentication.authorities.size}")
 
-        val token = jwtProvider.createToken(userId, email)
+        val token = jwtProvider.createToken(userId, email, role)
         val redirectUrl = "/?token=$token"
 
         redirectStrategy.sendRedirect(request, response, redirectUrl)

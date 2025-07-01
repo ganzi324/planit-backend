@@ -8,6 +8,7 @@ import io.mockk.mockk
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.core.user.OAuth2User
 
 class OAuth2AuthenticationSuccessHandlerTest : BehaviorSpec({
@@ -25,10 +26,11 @@ class OAuth2AuthenticationSuccessHandlerTest : BehaviorSpec({
         val authentication: Authentication = mockk {
             every { name } returns "testUser"
             every { getPrincipal() } returns principal
+            every { authorities } returns listOf(SimpleGrantedAuthority("ROLE_USER"))
         }
         val generatedToken = "generated-jwt-token"
 
-        every { jwtProvider.createToken(any(), any()) } returns generatedToken
+        every { jwtProvider.createToken(any(), any(), any()) } returns generatedToken
 
         When("onAuthenticationSuccess 핸들러가 호출되면") {
             successHandler.onAuthenticationSuccess(request, response, authentication)
