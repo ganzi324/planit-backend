@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.context.annotation.Import
+import org.springframework.data.repository.findByIdOrNull
 
 @DataJpaTest
 @Import(JpaConfig::class)
@@ -34,7 +35,7 @@ class UserRepositoryTest {
         val savedUser = userRepository.save(newUser)
 
         // then
-        val foundUser = userRepository.findById(savedUser.id!!).orElse(null)
+        val foundUser = userRepository.findByIdOrNull(savedUser.id!!)
         assertThat(foundUser).isNotNull
         assertThat(foundUser?.email).isEqualTo(newUser.email)
         assertThat(foundUser?.nickname).isEqualTo(newUser.nickname)
@@ -56,7 +57,7 @@ class UserRepositoryTest {
         userRepository.save(user)
 
         // when
-        val foundUser = userRepository.findByProviderAndProviderId(provider, providerId).orElse(null)
+        val foundUser = userRepository.findByProviderAndProviderId(provider, providerId)
 
         // then
         assertThat(foundUser).isNotNull
