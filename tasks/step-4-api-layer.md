@@ -6,7 +6,7 @@
 
 ### Sub-steps
 
-- [ ] **Sub-step 4.1: 일정 생성(Create) API 구현**
+- [x] **Sub-step 4.1: 일정 생성(Create) API 구현**
   - **Feature 브랜치**: `feature/create-schedule-api`
   - **예상 커밋**:
     1. `test(controller): 일정 생성 API 컨트롤러 테스트 추가`

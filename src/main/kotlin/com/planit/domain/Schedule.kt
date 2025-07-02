@@ -32,7 +32,7 @@ class Schedule(
 
     var alarmOffsetMinutes: Int? = null,
 
-    ) : BaseEntity() {
+) : BaseEntity() {
     init {
         require(startDate.isBefore(endDate)) { "종료일은 시작일보다 이전일 수 없습니다." }
     }

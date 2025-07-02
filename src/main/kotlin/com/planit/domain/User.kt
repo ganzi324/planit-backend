@@ -26,4 +26,7 @@ class User(
 
     var profileImageUrl: String? = null,
 
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val schedules: MutableList<Schedule> = mutableListOf()
+
 ) : BaseEntity() 

@@ -28,3 +28,7 @@ replay_pid*
 HELP.md
 .gradle/
 build/
+
+# IDE files
+.idea/
+.vscode/
