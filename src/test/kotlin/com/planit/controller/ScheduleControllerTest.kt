@@ -2,6 +2,7 @@ package com.planit.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.planit.config.TestSecurityConfig
+import com.planit.dto.ScheduleCompletionRequest
 import com.planit.dto.ScheduleRequest
 import com.planit.dto.ScheduleResponse
 import com.planit.domain.enums.SchedulePriority
@@ -24,6 +25,7 @@ import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
@@ -253,6 +255,35 @@ class ScheduleControllerTest(
                         .with(authentication(testAuthentication))
                 )
                     .andExpect(status().isNoContent)
+            }
+        }
+    }
+
+    Given("인증된 사용자가 일정 완료 상태 변경을 요청하면") {
+        val scheduleId = 1L
+        val request = ScheduleCompletionRequest(isCompleted = true)
+        val response = ScheduleResponse(
+            id = scheduleId,
+            title = "완료된 일정",
+            startDate = LocalDateTime.now(),
+            endDate = LocalDateTime.now().plusHours(1),
+            priority = SchedulePriority.HIGH,
+            isCompleted = true,
+            alarmOffsetMinutes = 10
+        )
+
+        When("PATCH /api/schedules/{scheduleId}/complete 를 호출하면") {
+            every { scheduleService.updateCompletionStatus(userId, scheduleId, request.isCompleted) } returns response
+
+            Then("200 OK 상태 코드와 함께 변경된 일정 정보가 반환된다") {
+                mockMvc.perform(
+                    patch("/api/schedules/{scheduleId}/complete", scheduleId)
+                        .with(authentication(testAuthentication))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                )
+                    .andExpect(status().isOk)
+                    .andExpect(jsonPath("$.isCompleted").value(true))
             }
         }
     }

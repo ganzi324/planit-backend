@@ -31,7 +31,7 @@
     1. `test(controller): 내 정보 조회 API 컨트롤러 테스트 추가`
     2. `feat(user): 내 정보 조회 API 구현`
 
-- [ ] **Sub-step 4.5: 일정 완료/미완료 처리 API 구현**
+- [x] **Sub-step 4.5: 일정 완료/미완료 처리 API 구현**
   - **Feature 브랜치**: `feature/complete-schedule-api`
   - **예상 커밋**:
     1. `test(controller): 일정 완료 처리 API 컨트롤러 테스트 추가`

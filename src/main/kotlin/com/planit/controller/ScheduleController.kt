@@ -1,5 +1,6 @@
 package com.planit.controller
 
+import com.planit.dto.ScheduleCompletionRequest
 import com.planit.dto.ScheduleRequest
 import com.planit.dto.ScheduleResponse
 import com.planit.service.ScheduleService
@@ -59,5 +60,15 @@ class ScheduleController(
     ): ResponseEntity<Unit> {
         scheduleService.deleteSchedule(userId, scheduleId)
         return ResponseEntity.noContent().build()
+    }
+
+    @PatchMapping("/{scheduleId}/complete")
+    fun updateCompletionStatus(
+        @AuthenticationPrincipal userId: Long,
+        @PathVariable scheduleId: Long,
+        @Valid @RequestBody request: ScheduleCompletionRequest
+    ): ResponseEntity<ScheduleResponse> {
+        val updatedSchedule = scheduleService.updateCompletionStatus(userId, scheduleId, request.isCompleted)
+        return ResponseEntity.ok(updatedSchedule)
     }
 } 

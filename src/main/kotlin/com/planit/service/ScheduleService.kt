@@ -77,4 +77,18 @@ class ScheduleService(
 
         scheduleRepository.delete(schedule)
     }
+
+    @Transactional
+    fun updateCompletionStatus(userId: Long, scheduleId: Long, isCompleted: Boolean): ScheduleResponse {
+        val schedule = scheduleRepository.findByIdOrNull(scheduleId)
+            ?: throw IllegalArgumentException("Schedule not found with id: $scheduleId")
+
+        require(schedule.user.id == userId) {
+            "User has no permission to update this schedule"
+        }
+
+        schedule.updateCompletion(isCompleted)
+
+        return ScheduleResponse.from(schedule)
+    }
 } 

@@ -120,13 +120,45 @@ class ScheduleServiceTest : BehaviorSpec({
         val schedule = createTestSchedule(scheduleId, user)
 
         every { scheduleRepository.findById(scheduleId) } returns Optional.of(schedule)
-        every { scheduleRepository.delete(schedule) } returns Unit
+        every { scheduleRepository.delete(any()) } returns Unit
 
         When("삭제를 요청하면") {
             scheduleService.deleteSchedule(userId, scheduleId)
 
             Then("ScheduleRepository의 delete 메서드가 호출되어야 한다") {
                 verify { scheduleRepository.delete(schedule) }
+            }
+        }
+    }
+
+    Given("사용자가 일정의 완료 상태를 변경하려고 할 때") {
+        val userId = 1L
+        val scheduleId = 1L
+        val user = createTestUser(userId)
+        lateinit var schedule: Schedule
+
+        beforeTest {
+            // 각 When 블록 실행 전에 schedule 상태 초기화
+            schedule = createTestSchedule(scheduleId, user)
+            every { scheduleRepository.findById(scheduleId) } returns Optional.of(schedule)
+        }
+
+        When("완료(true) 상태로 변경을 요청하면") {
+            val result = scheduleService.updateCompletionStatus(userId, scheduleId, true)
+            Then("일정이 완료 상태로 변경되어야 한다") {
+                result.isCompleted shouldBe true
+                schedule.isCompleted shouldBe true
+            }
+        }
+
+        When("이미 완료된 상태에서 다시 완료(true)로 변경을 요청하면") {
+            schedule.updateCompletion(true) // 테스트를 위해 초기 상태를 '완료'로 설정
+
+            Then("IllegalStateException 예외가 발생해야 한다") {
+                val exception = shouldThrow<IllegalStateException> {
+                    scheduleService.updateCompletionStatus(userId, scheduleId, true)
+                }
+                exception.message shouldBe "이미 '완료' 상태입니다."
             }
         }
     }
@@ -152,9 +184,6 @@ private fun createTestSchedule(id: Long, user: User): Schedule {
         endDate = LocalDateTime.now().plusHours(1),
         priority = SchedulePriority.MEDIUM
     )
-    // 리플렉션을 사용하여 private setter 호출
-    val idField = schedule.javaClass.superclass.getDeclaredField("id")
-    idField.isAccessible = true
-    idField.set(schedule, id)
+    schedule.id = id
     return schedule
 }
