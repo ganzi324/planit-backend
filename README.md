@@ -92,3 +92,90 @@ cursor-rules/
 ## 🔧 커스터마이징
 
 프로젝트 특성에 맞게 규칙을 선택적으로 적용하거나 수정하여 사용할 수 있습니다. 
+
+# Planit - 개인 일정 관리 백엔드 API
+
+**Planit**은 사용자가 자신의 일정을 효율적으로 관리할 수 있도록 돕는 개인 일정 관리 서비스의 백엔드 API입니다. 이 프로젝트는 Kotlin과 Spring Boot를 기반으로 구축되었으며, JWT를 이용한 소셜 로그인을 지원합니다.
+
+## ✨ 주요 기능
+
+- **사용자 관리**:
+    - 소셜 로그인 (Google, Kakao, Naver)을 통한 간편한 회원가입 및 로그인
+    - JWT 기반의 안전한 인증 시스템
+    - 내 정보 조회
+- **일정 관리**:
+    - 일정 생성(Create), 조회(Read), 수정(Update), 삭제(Delete) (CRUD)
+    - 월별/일별 일정 필터링 및 페이징 조회
+
+## 🛠️ 기술 스택
+
+- **언어**: `Kotlin 1.9.24`
+- **프레임워크**: `Spring Boot 3.3.1`
+- **데이터베이스**: `H2 In-memory DB`
+- **인증**: `Spring Security`, `OAuth 2.0`, `JWT`
+- **테스트**: `Kotest`, `MockK`
+- **빌드 도구**: `Gradle`
+
+## 🚀 시작하기
+
+### 1. 사전 요구사항
+
+- `JDK 17` 이상
+- `Gradle 8.8` 이상 (프로젝트에 포함된 Gradle Wrapper 사용을 권장합니다)
+
+### 2. 프로젝트 클론
+
+```bash
+git clone https://github.com/your-username/ganzi-blog.git
+cd ganzi-blog
+```
+
+### 3. 환경 변수 설정
+
+`src/main/resources/application.yml` 파일을 열어 아래 항목들을 실제 값으로 변경하거나, 환경 변수 또는 `application-local.yml` 파일을 생성하여 오버라이드해야 합니다.
+
+```yaml
+# OAuth2 Client Registration
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: [YOUR_GOOGLE_CLIENT_ID]
+            client-secret: [YOUR_GOOGLE_CLIENT_SECRET]
+          kakao:
+            client-id: [YOUR_KAKAO_CLIENT_ID]
+            client-secret: [YOUR_KAKAO_CLIENT_SECRET]
+          naver:
+            client-id: [YOUR_NAVER_CLIENT_ID]
+            client-secret: [YOUR_NAVER_CLIENT_SECRET]
+
+# JWT Secret Key
+jwt:
+  secret-key: "[YOUR_JWT_SECRET_KEY]" # 64바이트 이상의 복잡한 문자열을 권장합니다.
+```
+
+### 4. 애플리케이션 실행
+
+프로젝트 루트 디렉토리에서 아래 명령어를 실행하여 애플리케이션을 시작합니다.
+
+```bash
+./gradlew bootRun
+```
+
+애플리케이션이 성공적으로 실행되면 `localhost:8080`에서 API 서버가 동작합니다.
+
+## 📄 API 문서
+
+API의 각 엔드포인트에 대한 상세한 명세는 아래 문서에서 확인할 수 있습니다.
+
+- [**API 명세서 (api-spec.md)**](./docs/api-spec.md)
+
+## ✅ 테스트
+
+프로젝트의 모든 테스트 코드를 실행하려면 아래 명령어를 사용하세요.
+
+```bash
+./gradlew test
+``` 
