@@ -29,4 +29,16 @@
   - **Feature 브랜치**: `feature/get-user-me-api`
   - **예상 커밋**:
     1. `test(controller): 내 정보 조회 API 컨트롤러 테스트 추가`
-    2. `feat(user): 내 정보 조회 API 구현` 
+    2. `feat(user): 내 정보 조회 API 구현`
+
+- [ ] **Sub-step 4.5: 일정 완료/미완료 처리 API 구현**
+  - **Feature 브랜치**: `feature/complete-schedule-api`
+  - **예상 커밋**:
+    1. `test(controller): 일정 완료 처리 API 컨트롤러 테스트 추가`
+    2. `feat(schedule): 일정 완료 처리 API 구현`
+
+- [ ] **Sub-step 4.6: 일정 목록 상세 필터링 기능 추가**
+  - **Feature 브랜치**: `feature/filter-schedules-api`
+  - **예상 커밋**:
+    1. `test(controller): 일정 목록 상세 필터링 테스트 추가`
+    2. `refactor(schedule): 일정 목록 조회 API에 상세 필터링 기능 추가` 
