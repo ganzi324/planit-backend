@@ -45,4 +45,36 @@ class ScheduleService(
         return scheduleRepository.findAll(spec, pageable)
             .map { ScheduleResponse.from(it) }
     }
+
+    @Transactional
+    fun updateSchedule(userId: Long, scheduleId: Long, request: ScheduleRequest): ScheduleResponse {
+        val schedule = scheduleRepository.findByIdOrNull(scheduleId)
+            ?: throw IllegalArgumentException("Schedule not found with id: $scheduleId")
+
+        require(schedule.user.id == userId) {
+            "User has no permission to update this schedule"
+        }
+
+        schedule.apply {
+            this.title = request.title
+            this.description = request.description
+            this.startDate = request.startDate
+            this.endDate = request.endDate
+            this.priority = request.priority
+            this.alarmOffsetMinutes = request.alarmOffsetMinutes
+        }
+        return ScheduleResponse.from(schedule)
+    }
+
+    @Transactional
+    fun deleteSchedule(userId: Long, scheduleId: Long) {
+        val schedule = scheduleRepository.findByIdOrNull(scheduleId)
+            ?: throw IllegalArgumentException("Schedule not found with id: $scheduleId")
+
+        require(schedule.user.id == userId) {
+            "User has no permission to delete this schedule"
+        }
+
+        scheduleRepository.delete(schedule)
+    }
 } 

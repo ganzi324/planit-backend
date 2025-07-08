@@ -19,7 +19,7 @@
     1. `test(controller): 일정 목록 조회 API 컨트롤러 테스트 추가`
     2. `feat(schedule): 일정 목록 조회 API 구현 (페이징/필터링 포함)`
 
-- [ ] **Sub-step 4.3: 일정 수정(Update) 및 삭제(Delete) API 구현**
+- [x] **Sub-step 4.3: 일정 수정(Update) 및 삭제(Delete) API 구현**
   - **Feature 브랜치**: `feature/update-delete-schedule-api`
   - **예상 커밋**:
     1. `test(controller): 일정 수정/삭제 API 컨트롤러 테스트 추가`

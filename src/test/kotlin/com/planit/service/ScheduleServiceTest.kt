@@ -8,6 +8,7 @@ import com.planit.domain.enums.UserProvider
 import com.planit.dto.ScheduleRequest
 import com.planit.repository.ScheduleRepository
 import com.planit.repository.UserRepository
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -57,6 +58,78 @@ class ScheduleServiceTest : BehaviorSpec({
             }
         }
     }
+
+    Given("사용자가 자신의 일정을 수정하려고 할 때") {
+        val userId = 1L
+        val scheduleId = 1L
+        val user = createTestUser(userId)
+        val originalSchedule = createTestSchedule(scheduleId, user)
+
+        val updateRequest = ScheduleRequest(
+            title = "수정된 제목",
+            description = "수정된 설명",
+            startDate = LocalDateTime.now().plusDays(1),
+            endDate = LocalDateTime.now().plusDays(1).plusHours(2),
+            priority = SchedulePriority.LOW,
+            alarmOffsetMinutes = 15
+        )
+
+        every { scheduleRepository.findById(scheduleId) } returns Optional.of(originalSchedule)
+
+        When("유효한 내용으로 수정을 요청하면") {
+            val result = scheduleService.updateSchedule(userId, scheduleId, updateRequest)
+
+            Then("일정 정보가 정상적으로 수정되어야 한다") {
+                result.title shouldBe "수정된 제목"
+                result.priority shouldBe SchedulePriority.LOW
+                verify { scheduleRepository.findById(scheduleId) }
+            }
+        }
+    }
+
+    Given("사용자가 다른 사람의 일정을 수정하려고 할 때") {
+        val ownerId = 1L
+        val attackerId = 2L
+        val scheduleId = 1L
+        val owner = createTestUser(ownerId)
+        val schedule = createTestSchedule(scheduleId, owner)
+        val updateRequest = ScheduleRequest(
+            title = "해킹 시도",
+            description = null,
+            startDate = LocalDateTime.now(),
+            endDate = LocalDateTime.now().plusHours(1),
+            priority = SchedulePriority.HIGH
+        )
+
+        every { scheduleRepository.findById(scheduleId) } returns Optional.of(schedule)
+
+        When("수정을 요청하면") {
+            Then("IllegalArgumentException 예외가 발생해야 한다") {
+                val exception = shouldThrow<IllegalArgumentException> {
+                    scheduleService.updateSchedule(attackerId, scheduleId, updateRequest)
+                }
+                exception.message shouldBe "User has no permission to update this schedule"
+            }
+        }
+    }
+
+    Given("사용자가 자신의 일정을 삭제하려고 할 때") {
+        val userId = 1L
+        val scheduleId = 1L
+        val user = createTestUser(userId)
+        val schedule = createTestSchedule(scheduleId, user)
+
+        every { scheduleRepository.findById(scheduleId) } returns Optional.of(schedule)
+        every { scheduleRepository.delete(schedule) } returns Unit
+
+        When("삭제를 요청하면") {
+            scheduleService.deleteSchedule(userId, scheduleId)
+
+            Then("ScheduleRepository의 delete 메서드가 호출되어야 한다") {
+                verify { scheduleRepository.delete(schedule) }
+            }
+        }
+    }
 })
 
 private fun createTestUser(id: Long): User {
@@ -69,4 +142,19 @@ private fun createTestUser(id: Long): User {
     )
     user.id = id
     return user
+}
+
+private fun createTestSchedule(id: Long, user: User): Schedule {
+    val schedule = Schedule(
+        user = user,
+        title = "테스트 일정",
+        startDate = LocalDateTime.now(),
+        endDate = LocalDateTime.now().plusHours(1),
+        priority = SchedulePriority.MEDIUM
+    )
+    // 리플렉션을 사용하여 private setter 호출
+    val idField = schedule.javaClass.superclass.getDeclaredField("id")
+    idField.isAccessible = true
+    idField.set(schedule, id)
+    return schedule
 }

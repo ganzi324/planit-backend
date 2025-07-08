@@ -41,4 +41,23 @@ class ScheduleController(
         val schedules = scheduleService.getSchedules(userId, year, month, pageable)
         return ResponseEntity.ok(schedules)
     }
+
+    @PutMapping("/{scheduleId}")
+    fun updateSchedule(
+        @AuthenticationPrincipal userId: Long,
+        @PathVariable scheduleId: Long,
+        @Valid @RequestBody request: ScheduleRequest
+    ): ResponseEntity<ScheduleResponse> {
+        val updatedSchedule = scheduleService.updateSchedule(userId, scheduleId, request)
+        return ResponseEntity.ok(updatedSchedule)
+    }
+
+    @DeleteMapping("/{scheduleId}")
+    fun deleteSchedule(
+        @AuthenticationPrincipal userId: Long,
+        @PathVariable scheduleId: Long
+    ): ResponseEntity<Unit> {
+        scheduleService.deleteSchedule(userId, scheduleId)
+        return ResponseEntity.noContent().build()
+    }
 } 

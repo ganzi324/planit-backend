@@ -22,8 +22,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.time.LocalDateTime
 
@@ -197,6 +199,60 @@ class ScheduleControllerTest(
                     .andExpect(status().isOk)
                     .andExpect(jsonPath("$.content.length()").value(pageSize))
                     .andExpect(jsonPath("$.totalElements").value(10))
+            }
+        }
+    }
+
+    Given("인증된 사용자가 일정 수정을 요청하면") {
+        val scheduleId = 1L
+        val updateRequest = ScheduleRequest(
+            title = "수정된 회의",
+            description = "내용 수정",
+            startDate = LocalDateTime.of(2024, 8, 16, 14, 0),
+            endDate = LocalDateTime.of(2024, 8, 16, 15, 0),
+            priority = SchedulePriority.LOW,
+            alarmOffsetMinutes = 10
+        )
+        val updatedResponse = ScheduleResponse(
+            id = scheduleId,
+            title = "수정된 회의",
+            description = "내용 수정",
+            startDate = LocalDateTime.of(2024, 8, 16, 14, 0),
+            endDate = LocalDateTime.of(2024, 8, 16, 15, 0),
+            priority = SchedulePriority.LOW,
+            isCompleted = false,
+            alarmOffsetMinutes = 10
+        )
+
+        When("유효한 내용으로 PUT /api/schedules/{scheduleId}를 호출하면") {
+            every { scheduleService.updateSchedule(userId, scheduleId, updateRequest) } returns updatedResponse
+
+            Then("200 OK 상태 코드와 함께 수정된 일정 정보가 반환된다") {
+                mockMvc.perform(
+                    put("/api/schedules/{scheduleId}", scheduleId)
+                        .with(authentication(testAuthentication))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest))
+                )
+                    .andExpect(status().isOk)
+                    .andExpect(jsonPath("$.title").value("수정된 회의"))
+                    .andExpect(jsonPath("$.priority").value("LOW"))
+            }
+        }
+    }
+
+    Given("인증된 사용자가 일정 삭제를 요청하면") {
+        val scheduleId = 1L
+
+        When("DELETE /api/schedules/{scheduleId}를 호출하면") {
+            every { scheduleService.deleteSchedule(userId, scheduleId) } returns Unit
+
+            Then("204 No Content 상태 코드가 반환된다") {
+                mockMvc.perform(
+                    delete("/api/schedules/{scheduleId}", scheduleId)
+                        .with(authentication(testAuthentication))
+                )
+                    .andExpect(status().isNoContent)
             }
         }
     }
