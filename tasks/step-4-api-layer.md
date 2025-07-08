@@ -25,7 +25,7 @@
     1. `test(controller): 일정 수정/삭제 API 컨트롤러 테스트 추가`
     2. `feat(schedule): 일정 수정 및 삭제 API 구현`
 
-- [ ] **Sub-step 4.4: 사용자 정보 조회 API 구현**
+- [x] **Sub-step 4.4: 사용자 정보 조회 API 구현**
   - **Feature 브랜치**: `feature/get-user-me-api`
   - **예상 커밋**:
     1. `test(controller): 내 정보 조회 API 컨트롤러 테스트 추가`
