@@ -14,6 +14,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDateTime
+import java.util.Optional
 
 class ScheduleServiceTest : BehaviorSpec({
 
@@ -22,8 +23,8 @@ class ScheduleServiceTest : BehaviorSpec({
     val scheduleService = ScheduleService(scheduleRepository, userRepository)
 
     Given("유효한 일정 생성 요청이 들어올 때") {
-        val userEmail = "test@test.com"
-        val user = createTestUser(userEmail)
+        val userId = 1L
+        val user = createTestUser(userId)
         val scheduleRequest = ScheduleRequest(
             title = "새로운 회의",
             startDate = LocalDateTime.of(2024, 8, 15, 14, 0),
@@ -31,7 +32,7 @@ class ScheduleServiceTest : BehaviorSpec({
             priority = SchedulePriority.HIGH
         )
 
-        every { userRepository.findByEmail(userEmail) } returns user
+        every { userRepository.findById(userId) } returns Optional.of(user)
         every { scheduleRepository.save(any<Schedule>()) } answers {
             val schedule = firstArg<Schedule>()
             schedule.apply {
@@ -43,7 +44,7 @@ class ScheduleServiceTest : BehaviorSpec({
         }
 
         When("일정 생성 서비스를 호출하면") {
-            val result = scheduleService.createSchedule(userEmail, scheduleRequest)
+            val result = scheduleService.createSchedule(userId, scheduleRequest)
 
             Then("새로운 일정이 생성되고 응답 DTO가 반환되어야 한다") {
                 result.id shouldBe 1L
@@ -51,17 +52,21 @@ class ScheduleServiceTest : BehaviorSpec({
                 result.priority shouldBe SchedulePriority.HIGH
                 result.isCompleted shouldBe false
 
-                verify { userRepository.findByEmail(userEmail) }
+                verify { userRepository.findById(userId) }
                 verify { scheduleRepository.save(any<Schedule>()) }
             }
         }
     }
 })
 
-private fun createTestUser(email: String): User = User(
-    email = email,
-    nickname = "testuser",
-    provider = UserProvider.GOOGLE,
-    providerId = "12345",
-    role = Role.USER
-) 
+private fun createTestUser(id: Long): User {
+    val user = User(
+        email = "test@test.com",
+        nickname = "testuser",
+        provider = UserProvider.GOOGLE,
+        providerId = "12345",
+        role = Role.USER
+    )
+    user.id = id
+    return user
+}

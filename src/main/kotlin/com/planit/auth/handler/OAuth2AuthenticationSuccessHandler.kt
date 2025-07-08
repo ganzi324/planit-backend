@@ -1,38 +1,33 @@
 package com.planit.auth.handler
 
 import com.planit.auth.support.JwtProvider
+import com.planit.repository.UserRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.core.user.OAuth2User
-import org.springframework.security.web.DefaultRedirectStrategy
-import org.springframework.security.web.RedirectStrategy
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 import org.springframework.stereotype.Component
 
 @Component
 class OAuth2AuthenticationSuccessHandler(
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
+    private val userRepository: UserRepository
 ) : AuthenticationSuccessHandler {
-
-    private val redirectStrategy: RedirectStrategy = DefaultRedirectStrategy()
 
     override fun onAuthenticationSuccess(
         request: HttpServletRequest,
         response: HttpServletResponse,
         authentication: Authentication
     ) {
-        val principal = authentication.principal as OAuth2User
-        val userId = authentication.name
-        val email = principal.attributes["email"] as String
-        // 안전한 단일 권한 추출 (시스템에서 단일 권한만 사용)
-        val role = authentication.authorities
-            .singleOrNull()?.authority
-            ?: throw IllegalStateException("User must have exactly one authority, but found: ${authentication.authorities.size}")
+        val oAuth2User = authentication.principal as OAuth2User
+        val email = oAuth2User.attributes["email"] as String
 
-        val token = jwtProvider.createToken(userId, email, role)
-        val redirectUrl = "/?token=$token"
+        val user = userRepository.findByEmail(email)
+            ?: throw IllegalArgumentException("User not found with email: $email")
 
-        redirectStrategy.sendRedirect(request, response, redirectUrl)
+        val token = jwtProvider.createToken(user)
+        response.addHeader("Authorization", "Bearer $token")
+        response.sendRedirect("/") // 로그인 성공 후 리다이렉트
     }
 } 

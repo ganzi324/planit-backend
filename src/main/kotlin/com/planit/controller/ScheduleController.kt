@@ -4,6 +4,9 @@ import com.planit.dto.ScheduleRequest
 import com.planit.dto.ScheduleResponse
 import com.planit.service.ScheduleService
 import jakarta.validation.Valid
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -11,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.core.userdetails.UserDetails
-import java.security.Principal
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/schedules")
@@ -22,10 +24,21 @@ class ScheduleController(
 
     @PostMapping
     fun createSchedule(
-        principal: Principal,
+        @AuthenticationPrincipal userId: Long,
         @Valid @RequestBody request: ScheduleRequest
     ): ResponseEntity<ScheduleResponse> {
-        val response = scheduleService.createSchedule(principal.name, request)
-        return ResponseEntity.status(HttpStatus.CREATED).body(response)
+        val schedule = scheduleService.createSchedule(userId, request)
+        return ResponseEntity.status(HttpStatus.CREATED).body(schedule)
+    }
+
+    @GetMapping
+    fun getSchedules(
+        @AuthenticationPrincipal userId: Long,
+        @RequestParam(required = false) year: Int?,
+        @RequestParam(required = false) month: Int?,
+        @PageableDefault(size = 10, sort = ["startDate"]) pageable: Pageable
+    ): ResponseEntity<Page<ScheduleResponse>> {
+        val schedules = scheduleService.getSchedules(userId, year, month, pageable)
+        return ResponseEntity.ok(schedules)
     }
 } 

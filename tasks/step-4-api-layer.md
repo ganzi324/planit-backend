@@ -13,7 +13,7 @@
     2. `test(service): 일정 생성 서비스 로직 테스트 추가`
     3. `feat(schedule): 일정 생성 API 구현`
 
-- [ ] **Sub-step 4.2: 일정 목록 조회(Read) API 구현**
+- [x] **Sub-step 4.2: 일정 목록 조회(Read) API 구현**
   - **Feature 브랜치**: `feature/get-schedules-api`
   - **예상 커밋**:
     1. `test(controller): 일정 목록 조회 API 컨트롤러 테스트 추가`

@@ -77,6 +77,8 @@
     *   `page`: 페이지 번호 (0부터 시작, 기본값: 0)
     *   `size`: 페이지 당 항목 수 (기본값: 10)
     *   `sort`: 정렬 기준 (예: `startDate,desc`, 기본값: `startDate,asc`)
+    *   `year`: 연도 필터링 (예: 2024)
+    *   `month`: 월 필터링 (1부터 12 사이의 숫자)
     *   `isCompleted`: 완료 여부 필터링 (`true` / `false`)
     *   `priority`: 중요도 필터링 (`HIGH`, `MEDIUM`, `LOW`)
 *   **응답 (200 OK)**: [공통 페이징 응답 형식](#12-페이징-응답-형식) (content는 `ScheduleResponse` DTO 배열)

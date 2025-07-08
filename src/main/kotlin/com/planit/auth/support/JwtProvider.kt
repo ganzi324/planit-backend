@@ -1,5 +1,6 @@
 package com.planit.auth.support
 
+import com.planit.domain.User
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -18,14 +19,13 @@ class JwtProvider(
 ) {
     private val key: SecretKey = Keys.hmacShaKeyFor(secretKey.toByteArray())
 
-    fun createToken(userId: String, email: String, role: String): String {
+    fun createToken(user: User): String {
         val now = Date()
         val expiration = Date(now.time + expirationHours * 3600 * 1000)
 
         return Jwts.builder()
-            .subject(userId)
-            .claim("email", email)
-            .claim("role", role)
+            .subject(user.id.toString())
+            .claim("role", user.role.key)
             .issuedAt(now)
             .expiration(expiration)
             .signWith(key)
@@ -44,15 +44,15 @@ class JwtProvider(
 
     fun getAuthentication(token: String): Authentication {
         val claims = getClaims(token)
-        val email = claims.get("email", String::class.java)
+        val userId = claims.subject.toLong()
         val role = claims.get("role", String::class.java)
         val authorities = listOf(SimpleGrantedAuthority(role))
 
-        return UsernamePasswordAuthenticationToken(email, null, authorities)
+        return UsernamePasswordAuthenticationToken(userId, null, authorities)
     }
 
-    fun getEmail(token: String): String {
-        return getClaims(token).get("email", String::class.java)
+    fun getUserId(token: String): Long {
+        return getClaims(token).subject.toLong()
     }
 
     private fun getClaims(token: String): Claims {

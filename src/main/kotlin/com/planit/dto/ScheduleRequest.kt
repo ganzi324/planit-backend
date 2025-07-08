@@ -15,6 +15,8 @@ data class ScheduleRequest(
     @field:NotBlank(message = "일정 제목은 필수입니다")
     val title: String,
     
+    val description: String? = null,
+    
     @field:NotNull(message = "시작 날짜는 필수입니다")
     val startDate: LocalDateTime,
     

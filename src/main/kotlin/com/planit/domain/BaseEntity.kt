@@ -13,7 +13,7 @@ abstract class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
-        protected set
+        internal set
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

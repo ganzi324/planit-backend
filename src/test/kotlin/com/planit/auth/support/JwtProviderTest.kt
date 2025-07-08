@@ -1,5 +1,8 @@
 package com.planit.auth.support
 
+import com.planit.domain.User
+import com.planit.domain.enums.Role
+import com.planit.domain.enums.UserProvider
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -11,20 +14,26 @@ class JwtProviderTest(
 ) : BehaviorSpec({
 
     Given("JwtProvider가 주어졌을 때") {
-        val userId = "testUser"
-        val userEmail = "test@example.com"
-        val userRole = "ROLE_USER"
+        val user = User(
+            email = "test@example.com",
+            nickname = "testUser",
+            provider = UserProvider.KAKAO,
+            providerId = "testProviderId",
+            role = Role.USER
+        )
+        // 테스트를 위해 리플렉션으로 ID를 설정합니다. BaseEntity의 ID setter가 protected이기 때문입니다.
+        user.id = 1L
 
         When("토큰을 생성하면") {
-            val token = jwtProvider.createToken(userId, userEmail, userRole)
+            val token = jwtProvider.createToken(user)
 
             Then("토큰이 정상적으로 생성된다") {
                 token shouldNotBe null
             }
 
-            Then("생성된 토큰을 파싱하면 원래의 이메일이 나온다") {
-                val parsedEmail = jwtProvider.getEmail(token)
-                parsedEmail shouldBe userEmail
+            Then("생성된 토큰을 파싱하면 원래의 사용자 ID가 나온다") {
+                val parsedUserId = jwtProvider.getUserId(token)
+                parsedUserId shouldBe user.id
             }
         }
     }
