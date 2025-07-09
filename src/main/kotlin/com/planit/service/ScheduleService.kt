@@ -4,12 +4,11 @@ import com.planit.domain.Schedule
 import com.planit.domain.enums.SchedulePriority
 import com.planit.dto.ScheduleRequest
 import com.planit.dto.ScheduleResponse
+import com.planit.dto.ScheduleSearchCondition
 import com.planit.repository.ScheduleRepository
 import com.planit.repository.UserRepository
-import com.planit.service.spec.ScheduleSpecification
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -37,13 +36,12 @@ class ScheduleService(
     }
 
     @Transactional(readOnly = true)
-    fun getSchedules(userId: Long, year: Int?, month: Int?, pageable: Pageable): Page<ScheduleResponse> {
-        val spec: Specification<Schedule> = Specification.where(ScheduleSpecification.hasUser(userId))
-            .and(ScheduleSpecification.isYear(year))
-            .and(ScheduleSpecification.isMonth(month))
-
-        return scheduleRepository.findAll(spec, pageable)
-            .map { ScheduleResponse.from(it) }
+    fun getSchedules(
+        userId: Long,
+        condition: ScheduleSearchCondition,
+        pageable: Pageable
+    ): Page<ScheduleResponse> {
+        return scheduleRepository.search(userId, condition, pageable).map { ScheduleResponse.from(it) }
     }
 
     @Transactional

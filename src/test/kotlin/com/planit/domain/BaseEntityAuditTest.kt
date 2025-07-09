@@ -1,6 +1,7 @@
 package com.planit.domain
 
 import com.planit.config.JpaConfig
+import com.planit.config.QueryDslConfig
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
@@ -12,7 +13,7 @@ import org.springframework.context.annotation.Import
 import java.time.LocalDateTime
 
 @DataJpaTest
-@Import(JpaConfig::class)
+@Import(JpaConfig::class, QueryDslConfig::class)
 class BaseEntityAuditTest {
 
     @Autowired

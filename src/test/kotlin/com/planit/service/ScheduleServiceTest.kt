@@ -6,6 +6,7 @@ import com.planit.domain.enums.Role
 import com.planit.domain.enums.SchedulePriority
 import com.planit.domain.enums.UserProvider
 import com.planit.dto.ScheduleRequest
+import com.planit.dto.ScheduleSearchCondition
 import com.planit.repository.ScheduleRepository
 import com.planit.repository.UserRepository
 import io.kotest.assertions.throwables.shouldThrow
@@ -14,6 +15,8 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import java.time.LocalDateTime
 import java.util.Optional
 
@@ -22,6 +25,26 @@ class ScheduleServiceTest : BehaviorSpec({
     val scheduleRepository: ScheduleRepository = mockk()
     val userRepository: UserRepository = mockk()
     val scheduleService = ScheduleService(scheduleRepository, userRepository)
+
+    Given("일정 목록 조회를 요청하면") {
+        val userId = 1L
+        val condition = ScheduleSearchCondition(year = 2024, month = 8, priority = null, isCompleted = false)
+        val pageable = PageRequest.of(0, 10)
+        val testSchedule = createTestSchedule(1L, createTestUser(userId))
+        val schedulePage = PageImpl(listOf(testSchedule), pageable, 1)
+
+        every { scheduleRepository.search(userId, condition, pageable) } returns schedulePage
+
+        When("서비스를 호출하면") {
+            val result = scheduleService.getSchedules(userId, condition, pageable)
+
+            Then("레포지토리의 search 메소드를 호출하고 결과를 반환해야 한다") {
+                result.totalElements shouldBe 1
+                result.content[0].id shouldBe 1L
+                verify { scheduleRepository.search(userId, condition, pageable) }
+            }
+        }
+    }
 
     Given("유효한 일정 생성 요청이 들어올 때") {
         val userId = 1L
@@ -120,7 +143,7 @@ class ScheduleServiceTest : BehaviorSpec({
         val schedule = createTestSchedule(scheduleId, user)
 
         every { scheduleRepository.findById(scheduleId) } returns Optional.of(schedule)
-        every { scheduleRepository.delete(any()) } returns Unit
+        every { scheduleRepository.delete(any<Schedule>()) } returns Unit
 
         When("삭제를 요청하면") {
             scheduleService.deleteSchedule(userId, scheduleId)
@@ -135,24 +158,22 @@ class ScheduleServiceTest : BehaviorSpec({
         val userId = 1L
         val scheduleId = 1L
         val user = createTestUser(userId)
-        lateinit var schedule: Schedule
 
-        beforeTest {
-            // 각 When 블록 실행 전에 schedule 상태 초기화
-            schedule = createTestSchedule(scheduleId, user)
+        When("미완료 상태의 일정을 '완료(true)'로 변경을 요청하면") {
+            val schedule = createTestSchedule(scheduleId, user, isCompleted = false)
             every { scheduleRepository.findById(scheduleId) } returns Optional.of(schedule)
-        }
 
-        When("완료(true) 상태로 변경을 요청하면") {
             val result = scheduleService.updateCompletionStatus(userId, scheduleId, true)
+
             Then("일정이 완료 상태로 변경되어야 한다") {
                 result.isCompleted shouldBe true
                 schedule.isCompleted shouldBe true
             }
         }
 
-        When("이미 완료된 상태에서 다시 완료(true)로 변경을 요청하면") {
-            schedule.updateCompletion(true) // 테스트를 위해 초기 상태를 '완료'로 설정
+        When("이미 완료된 상태에서 다시 '완료(true)'로 변경을 요청하면") {
+            val schedule = createTestSchedule(scheduleId, user, isCompleted = true)
+            every { scheduleRepository.findById(scheduleId) } returns Optional.of(schedule)
 
             Then("IllegalStateException 예외가 발생해야 한다") {
                 val exception = shouldThrow<IllegalStateException> {
@@ -176,13 +197,14 @@ private fun createTestUser(id: Long): User {
     return user
 }
 
-private fun createTestSchedule(id: Long, user: User): Schedule {
+private fun createTestSchedule(id: Long, user: User, isCompleted: Boolean = false): Schedule {
     val schedule = Schedule(
         user = user,
         title = "테스트 일정",
         startDate = LocalDateTime.now(),
         endDate = LocalDateTime.now().plusHours(1),
-        priority = SchedulePriority.MEDIUM
+        priority = SchedulePriority.MEDIUM,
+        isCompleted = isCompleted
     )
     schedule.id = id
     return schedule

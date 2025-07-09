@@ -6,10 +6,10 @@ import com.planit.dto.ScheduleCompletionRequest
 import com.planit.dto.ScheduleRequest
 import com.planit.dto.ScheduleResponse
 import com.planit.domain.enums.SchedulePriority
+import com.planit.dto.ScheduleSearchCondition
 import com.planit.service.ScheduleService
 import io.kotest.core.spec.style.BehaviorSpec
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.*
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
@@ -17,17 +17,14 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Primary
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.http.MediaType
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.time.LocalDateTime
 
@@ -167,7 +164,8 @@ class ScheduleControllerTest(
         val schedulePage = PageImpl(scheduleResponses, pageable, 10L)
 
         When("페이징 정보를 포함하여 GET /api/schedules를 호출하면") {
-            every { scheduleService.getSchedules(userId, null, null, any()) } returns schedulePage
+            val emptyCondition = ScheduleSearchCondition(year = null, month = null, priority = null, isCompleted = null)
+            every { scheduleService.getSchedules(eq(userId), eq(emptyCondition), any()) } returns schedulePage
 
             Then("200 OK 상태 코드와 함께 페이징된 일정 목록이 반환된다") {
 
@@ -187,7 +185,8 @@ class ScheduleControllerTest(
         When("연도와 월 필터링 정보를 포함하여 GET /api/schedules를 호출하면") {
             val year = 2024
             val month = 8
-            every { scheduleService.getSchedules(userId, year, month, any()) } returns schedulePage
+            val condition = ScheduleSearchCondition(year = year, month = month, priority = null, isCompleted = null)
+            every { scheduleService.getSchedules(eq(userId), eq(condition), any()) } returns schedulePage
 
             Then("200 OK 상태 코드와 함께 필터링 및 페이징된 일정 목록이 반환된다") {
                 mockMvc.perform(
@@ -201,6 +200,71 @@ class ScheduleControllerTest(
                     .andExpect(status().isOk)
                     .andExpect(jsonPath("$.content.length()").value(pageSize))
                     .andExpect(jsonPath("$.totalElements").value(10))
+            }
+        }
+
+        When("인증된 사용자와 페이징 정보가 주어졌을 때") {
+            val pageable: Pageable = PageRequest.of(0, 10)
+            val year = 2024
+            val month = 7
+            val scheduleResponse = ScheduleResponse(
+                id = 1L,
+                title = "테스트 일정",
+                startDate = LocalDateTime.of(year, month, 15, 10, 0),
+                endDate = LocalDateTime.of(year, month, 15, 11, 0),
+                priority = SchedulePriority.HIGH,
+                isCompleted = false,
+                alarmOffsetMinutes = 10
+            )
+            val response = PageImpl(listOf(scheduleResponse), pageable, 1)
+
+            When("연도와 월로 조회를 요청하면") {
+                val condition = ScheduleSearchCondition(year = year, month = month, priority = null, isCompleted = null)
+                every { scheduleService.getSchedules(eq(userId), eq(condition), any()) } returns response
+
+                Then("200 OK 상태 코드와 함께 해당 기간의 일정 목록이 반환된다") {
+                    mockMvc.perform(
+                        get("/api/schedules")
+                            .with(authentication(testAuthentication))
+                            .param("year", year.toString())
+                            .param("month", month.toString())
+                            .param("page", "0")
+                            .param("size", "10")
+                    )
+                        .andExpect(status().isOk)
+                        .andExpect(jsonPath("$.content.length()").value(1))
+                        .andExpect(jsonPath("$.content[0].title").value("테스트 일정"))
+                }
+            }
+
+            When("중요도(priority)로 필터링하여 조회를 요청하면") {
+                val condition = ScheduleSearchCondition(year = null, month = null, priority = SchedulePriority.HIGH, isCompleted = null)
+                every { scheduleService.getSchedules(eq(userId), eq(condition), any()) } returns response
+
+                Then("200 OK 상태 코드와 함께 해당 중요도의 일정 목록이 반환된다") {
+                    mockMvc.perform(
+                        get("/api/schedules")
+                            .with(authentication(testAuthentication))
+                            .param("priority", "HIGH")
+                    )
+                        .andExpect(status().isOk)
+                        .andExpect(jsonPath("$.content.length()").value(1))
+                }
+            }
+
+            When("완료 여부(isCompleted)로 필터링하여 조회를 요청하면") {
+                val condition = ScheduleSearchCondition(year = null, month = null, priority = null, isCompleted = true)
+                every { scheduleService.getSchedules(eq(userId), eq(condition), any()) } returns response
+
+                Then("200 OK 상태 코드와 함께 해당 상태의 일정 목록이 반환된다") {
+                    mockMvc.perform(
+                        get("/api/schedules")
+                            .with(authentication(testAuthentication))
+                            .param("isCompleted", "true")
+                    )
+                        .andExpect(status().isOk)
+                        .andExpect(jsonPath("$.content.length()").value(1))
+                }
             }
         }
     }

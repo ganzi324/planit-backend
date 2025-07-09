@@ -4,6 +4,8 @@ import com.planit.dto.ScheduleCompletionRequest
 import com.planit.dto.ScheduleRequest
 import com.planit.dto.ScheduleResponse
 import com.planit.service.ScheduleService
+import com.planit.domain.enums.SchedulePriority
+import com.planit.dto.ScheduleSearchCondition
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -35,11 +37,10 @@ class ScheduleController(
     @GetMapping
     fun getSchedules(
         @AuthenticationPrincipal userId: Long,
-        @RequestParam(required = false) year: Int?,
-        @RequestParam(required = false) month: Int?,
+        condition: ScheduleSearchCondition,
         @PageableDefault(size = 10, sort = ["startDate"]) pageable: Pageable
     ): ResponseEntity<Page<ScheduleResponse>> {
-        val schedules = scheduleService.getSchedules(userId, year, month, pageable)
+        val schedules = scheduleService.getSchedules(userId, condition, pageable)
         return ResponseEntity.ok(schedules)
     }
 

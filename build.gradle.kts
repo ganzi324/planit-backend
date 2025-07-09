@@ -7,6 +7,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.6"
     id("org.jetbrains.kotlin.plugin.jpa") version "1.9.25"
     id("org.jetbrains.kotlin.plugin.noarg") version "1.9.25"
+    id("org.jetbrains.kotlin.kapt") version "1.9.25"
 }
 
 group = "com.planit"
@@ -49,6 +50,20 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
+
+    // QueryDSL
+    implementation("com.querydsl:querydsl-jpa:5.1.0:jakarta")
+    kapt("com.querydsl:querydsl-apt:5.1.0:jakarta")
+    kapt("jakarta.annotation:jakarta.annotation-api")
+    kapt("jakarta.persistence:jakarta.persistence-api")
+}
+
+sourceSets {
+    main {
+        kotlin {
+            srcDir("$buildDir/generated/kapt/compileKotlin")
+        }
+    }
 }
 
 kotlin {
