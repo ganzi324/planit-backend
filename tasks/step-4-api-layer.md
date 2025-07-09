@@ -41,4 +41,25 @@
   - **Feature 브랜치**: `feature/filter-schedules-api`
   - **예상 커밋**:
     1. `test(controller): 일정 목록 상세 필터링 테스트 추가`
-    2. `refactor(schedule): 일정 목록 조회 API에 상세 필터링 기능 추가` 
+    2. `refactor(schedule): 일정 목록 조회 API에 상세 필터링 기능 추가`
+
+- [ ] **Sub-step 4.7: 단일 일정 조회 API 구현**
+  - **Feature 브랜치**: `feature/get-single-schedule-api`
+  - **API 명세**: `GET /api/schedules/{scheduleId}` (api-spec.md 정의됨)
+  - **예상 커밋**:
+    1. `test(controller): 단일 일정 조회 API 컨트롤러 테스트 추가`
+    2. `test(service): 단일 일정 조회 서비스 로직 테스트 추가`
+    3. `feat(schedule): 단일 일정 조회 API 구현`
+
+- [ ] **Sub-step 4.8: 대시보드 뷰 API 구현 (MVP 핵심 기능)**
+  - **Feature 브랜치**: `feature/dashboard-view-api`
+  - **API 명세**: `GET /api/schedules/dashboard` (신규 추가 필요)
+  - **핵심 기능**:
+    - 🟢 **현재 진행 중인 일정**: 시작일 <= 현재시간 <= 종료일
+    - 🔜 **다음 예정된 일정**: 현재시간 이후 가장 가까운 시작일 기준
+    - ⏰ **오늘의 일정**: 시작일이 오늘인 일정들
+  - **예상 커밋**:
+    1. `docs(api): 대시보드 뷰 API 명세 추가`
+    2. `test(controller): 대시보드 뷰 API 컨트롤러 테스트 추가`
+    3. `test(service): 대시보드 뷰 서비스 로직 테스트 추가`
+    4. `feat(schedule): 대시보드 뷰 API 구현 (현재/다음 일정 강조)` 
