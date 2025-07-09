@@ -3,6 +3,7 @@ package com.planit.service
 import com.planit.domain.User
 import com.planit.domain.enums.Role
 import com.planit.domain.enums.UserProvider
+import com.planit.exception.UserNotFoundException
 import com.planit.repository.UserRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -44,8 +45,8 @@ class UserServiceTest : BehaviorSpec({
         every { userRepository.findById(userId) } returns Optional.empty()
 
         When("사용자 정보 조회를 요청하면") {
-            Then("IllegalArgumentException 예외가 발생해야 한다") {
-                val exception = shouldThrow<IllegalArgumentException> {
+            Then("UserNotFoundException 예외가 발생해야 한다") {
+                val exception = shouldThrow<UserNotFoundException> {
                     userService.getUserInfo(userId)
                 }
                 exception.message shouldBe "User not found with id: $userId"

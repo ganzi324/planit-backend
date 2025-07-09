@@ -1,6 +1,7 @@
 package com.planit.auth.handler
 
 import com.planit.auth.support.JwtProvider
+import com.planit.exception.UserNotFoundByEmailException
 import com.planit.repository.UserRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -24,7 +25,7 @@ class OAuth2AuthenticationSuccessHandler(
         val email = oAuth2User.attributes["email"] as String
 
         val user = userRepository.findByEmail(email)
-            ?: throw IllegalArgumentException("User not found with email: $email")
+            ?: throw UserNotFoundByEmailException(email)
 
         val token = jwtProvider.createToken(user)
         response.addHeader("Authorization", "Bearer $token")

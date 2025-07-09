@@ -5,6 +5,9 @@ import com.planit.domain.enums.SchedulePriority
 import com.planit.dto.ScheduleRequest
 import com.planit.dto.ScheduleResponse
 import com.planit.dto.ScheduleSearchCondition
+import com.planit.exception.ScheduleNotFoundException
+import com.planit.exception.UnauthorizedAccessException
+import com.planit.exception.UserNotFoundException
 import com.planit.repository.ScheduleRepository
 import com.planit.repository.UserRepository
 import org.springframework.data.domain.Page
@@ -21,7 +24,7 @@ class ScheduleService(
     @Transactional
     fun createSchedule(userId: Long, request: ScheduleRequest): ScheduleResponse {
         val user = userRepository.findByIdOrNull(userId)
-            ?: throw IllegalArgumentException("User not found with id: $userId")
+            ?: throw UserNotFoundException(userId)
 
         val schedule = Schedule(
             user = user,
@@ -47,10 +50,10 @@ class ScheduleService(
     @Transactional
     fun updateSchedule(userId: Long, scheduleId: Long, request: ScheduleRequest): ScheduleResponse {
         val schedule = scheduleRepository.findByIdOrNull(scheduleId)
-            ?: throw IllegalArgumentException("Schedule not found with id: $scheduleId")
+            ?: throw ScheduleNotFoundException(scheduleId)
 
-        require(schedule.user.id == userId) {
-            "User has no permission to update this schedule"
+        if (schedule.user.id != userId) {
+            throw UnauthorizedAccessException("User has no permission to update this schedule")
         }
 
         schedule.apply {
@@ -67,10 +70,10 @@ class ScheduleService(
     @Transactional
     fun deleteSchedule(userId: Long, scheduleId: Long) {
         val schedule = scheduleRepository.findByIdOrNull(scheduleId)
-            ?: throw IllegalArgumentException("Schedule not found with id: $scheduleId")
+            ?: throw ScheduleNotFoundException(scheduleId)
 
-        require(schedule.user.id == userId) {
-            "User has no permission to delete this schedule"
+        if (schedule.user.id != userId) {
+            throw UnauthorizedAccessException("User has no permission to delete this schedule")
         }
 
         scheduleRepository.delete(schedule)
@@ -79,10 +82,10 @@ class ScheduleService(
     @Transactional
     fun updateCompletionStatus(userId: Long, scheduleId: Long, isCompleted: Boolean): ScheduleResponse {
         val schedule = scheduleRepository.findByIdOrNull(scheduleId)
-            ?: throw IllegalArgumentException("Schedule not found with id: $scheduleId")
+            ?: throw ScheduleNotFoundException(scheduleId)
 
-        require(schedule.user.id == userId) {
-            "User has no permission to update this schedule"
+        if (schedule.user.id != userId) {
+            throw UnauthorizedAccessException("User has no permission to update this schedule")
         }
 
         schedule.updateCompletion(isCompleted)

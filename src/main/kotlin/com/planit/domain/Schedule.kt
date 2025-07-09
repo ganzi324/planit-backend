@@ -1,6 +1,7 @@
 package com.planit.domain
 
 import com.planit.domain.enums.SchedulePriority
+import com.planit.exception.InvalidScheduleStateException
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -39,21 +40,21 @@ class Schedule(
 
     fun complete() {
         if (this.isCompleted) {
-            throw IllegalStateException("이미 완료된 일정입니다.")
+            throw InvalidScheduleStateException("이미 완료된 일정입니다.")
         }
         this.isCompleted = true
     }
 
     fun uncomplete() {
         if (!this.isCompleted) {
-            throw IllegalStateException("아직 완료되지 않은 일정입니다.")
+            throw InvalidScheduleStateException("아직 완료되지 않은 일정입니다.")
         }
         this.isCompleted = false
     }
 
     fun updateCompletion(completed: Boolean) {
         if (this.isCompleted == completed) {
-            throw IllegalStateException("이미 '${if (completed) "완료" else "미완료"}' 상태입니다.")
+            throw InvalidScheduleStateException("이미 '${if (completed) "완료" else "미완료"}' 상태입니다.")
         }
         this.isCompleted = completed
     }

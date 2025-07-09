@@ -7,6 +7,8 @@ import com.planit.domain.enums.SchedulePriority
 import com.planit.domain.enums.UserProvider
 import com.planit.dto.ScheduleRequest
 import com.planit.dto.ScheduleSearchCondition
+import com.planit.exception.InvalidScheduleStateException
+import com.planit.exception.UnauthorizedAccessException
 import com.planit.repository.ScheduleRepository
 import com.planit.repository.UserRepository
 import io.kotest.assertions.throwables.shouldThrow
@@ -127,8 +129,8 @@ class ScheduleServiceTest : BehaviorSpec({
         every { scheduleRepository.findById(scheduleId) } returns Optional.of(schedule)
 
         When("수정을 요청하면") {
-            Then("IllegalArgumentException 예외가 발생해야 한다") {
-                val exception = shouldThrow<IllegalArgumentException> {
+            Then("UnauthorizedAccessException 예외가 발생해야 한다") {
+                val exception = shouldThrow<UnauthorizedAccessException> {
                     scheduleService.updateSchedule(attackerId, scheduleId, updateRequest)
                 }
                 exception.message shouldBe "User has no permission to update this schedule"
@@ -175,8 +177,8 @@ class ScheduleServiceTest : BehaviorSpec({
             val schedule = createTestSchedule(scheduleId, user, isCompleted = true)
             every { scheduleRepository.findById(scheduleId) } returns Optional.of(schedule)
 
-            Then("IllegalStateException 예외가 발생해야 한다") {
-                val exception = shouldThrow<IllegalStateException> {
+            Then("InvalidScheduleStateException 예외가 발생해야 한다") {
+                val exception = shouldThrow<InvalidScheduleStateException> {
                     scheduleService.updateCompletionStatus(userId, scheduleId, true)
                 }
                 exception.message shouldBe "이미 '완료' 상태입니다."
