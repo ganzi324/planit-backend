@@ -44,6 +44,15 @@ class ScheduleController(
         return ResponseEntity.ok(schedules)
     }
 
+    @GetMapping("/{scheduleId}")
+    fun getSchedule(
+        @AuthenticationPrincipal userId: Long,
+        @PathVariable scheduleId: Long
+    ): ResponseEntity<ScheduleResponse> {
+        val schedule = scheduleService.getSchedule(scheduleId, userId)
+        return ResponseEntity.ok(schedule)
+    }
+
     @PutMapping("/{scheduleId}")
     fun updateSchedule(
         @AuthenticationPrincipal userId: Long,

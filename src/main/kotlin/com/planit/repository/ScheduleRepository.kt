@@ -9,4 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface ScheduleRepository : JpaRepository<Schedule, Long>, ScheduleRepositoryQuerydsl {
     fun findAllByUser(user: User): List<Schedule>
     fun findByUser_Id(userId: Long, pageable: Pageable): Page<Schedule>
+    fun findByIdAndUserId(id: Long, userId: Long): Schedule?
 } 

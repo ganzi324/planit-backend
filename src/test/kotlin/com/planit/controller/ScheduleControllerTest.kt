@@ -7,6 +7,7 @@ import com.planit.dto.ScheduleRequest
 import com.planit.dto.ScheduleResponse
 import com.planit.domain.enums.SchedulePriority
 import com.planit.dto.ScheduleSearchCondition
+import com.planit.exception.ScheduleNotFoundException
 import com.planit.service.ScheduleService
 import io.kotest.core.spec.style.BehaviorSpec
 import io.mockk.*
@@ -140,6 +141,63 @@ class ScheduleControllerTest(
                         .content(objectMapper.writeValueAsString(scheduleRequest))
                 )
                     .andExpect(status().isUnauthorized)
+            }
+        }
+    }
+
+    Given("인증된 사용자가 단일 일정 조회를 요청하면") {
+        val scheduleId = 1L
+        val scheduleResponse = ScheduleResponse(
+            id = scheduleId,
+            title = "테스트 일정",
+            description = "상세 설명",
+            startDate = LocalDateTime.of(2024, 8, 15, 14, 0),
+            endDate = LocalDateTime.of(2024, 8, 15, 15, 0),
+            priority = SchedulePriority.HIGH,
+            isCompleted = false,
+            alarmOffsetMinutes = 30
+        )
+
+        When("존재하는 일정 ID로 GET /api/schedules/{scheduleId}를 호출하면") {
+            every { scheduleService.getSchedule(scheduleId, userId) } returns scheduleResponse
+
+            Then("200 OK 상태 코드와 함께 일정 정보가 반환된다") {
+                mockMvc.perform(
+                    get("/api/schedules/{scheduleId}", scheduleId)
+                        .with(authentication(testAuthentication))
+                )
+                    .andExpect(status().isOk)
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id").value(scheduleId))
+                    .andExpect(jsonPath("$.title").value("테스트 일정"))
+                    .andExpect(jsonPath("$.priority").value("HIGH"))
+                    .andExpect(jsonPath("$.isCompleted").value(false))
+            }
+        }
+
+        When("존재하지 않는 일정 ID로 GET /api/schedules/{scheduleId}를 호출하면") {
+            val nonExistentId = 999L
+            every { scheduleService.getSchedule(nonExistentId, userId) } throws ScheduleNotFoundException(nonExistentId)
+
+            Then("ScheduleNotFoundException이 발생한다") {
+                mockMvc.perform(
+                    get("/api/schedules/{scheduleId}", nonExistentId)
+                        .with(authentication(testAuthentication))
+                )
+                    .andExpect(status().isNotFound)
+            }
+        }
+
+        When("다른 사용자의 일정에 접근하려고 하면") {
+            val otherUsersScheduleId = 2L
+            every { scheduleService.getSchedule(otherUsersScheduleId, userId) } throws ScheduleNotFoundException(otherUsersScheduleId)
+
+            Then("ScheduleNotFoundException이 발생한다") {
+                mockMvc.perform(
+                    get("/api/schedules/{scheduleId}", otherUsersScheduleId)
+                        .with(authentication(testAuthentication))
+                )
+                    .andExpect(status().isNotFound)
             }
         }
     }

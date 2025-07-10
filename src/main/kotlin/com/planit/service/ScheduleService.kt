@@ -39,6 +39,14 @@ class ScheduleService(
     }
 
     @Transactional(readOnly = true)
+    fun getSchedule(scheduleId: Long, userId: Long): ScheduleResponse {
+        val schedule = scheduleRepository.findByIdAndUserId(scheduleId, userId)
+            ?: throw ScheduleNotFoundException(scheduleId)
+        
+        return ScheduleResponse.from(schedule)
+    }
+
+    @Transactional(readOnly = true)
     fun getSchedules(
         userId: Long,
         condition: ScheduleSearchCondition,

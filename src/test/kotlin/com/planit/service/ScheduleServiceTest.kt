@@ -28,6 +28,51 @@ class ScheduleServiceTest : BehaviorSpec({
     val userRepository: UserRepository = mockk()
     val scheduleService = ScheduleService(scheduleRepository, userRepository)
 
+    Given("단일 일정 조회를 요청하면") {
+        val userId = 1L
+        val scheduleId = 1L
+        val user = createTestUser(userId)
+        val schedule = createTestSchedule(scheduleId, user)
+
+        When("존재하는 일정 ID로 조회하면") {
+            every { scheduleRepository.findByIdAndUserId(scheduleId, userId) } returns schedule
+
+            val result = scheduleService.getSchedule(scheduleId, userId)
+
+            Then("해당 일정 정보가 반환되어야 한다") {
+                result.id shouldBe scheduleId
+                result.title shouldBe schedule.title
+                result.priority shouldBe schedule.priority
+                result.isCompleted shouldBe schedule.isCompleted
+                verify { scheduleRepository.findByIdAndUserId(scheduleId, userId) }
+            }
+        }
+
+        When("존재하지 않는 일정 ID로 조회하면") {
+            val nonExistentId = 999L
+            every { scheduleRepository.findByIdAndUserId(nonExistentId, userId) } returns null
+
+            Then("IllegalArgumentException 예외가 발생해야 한다") {
+                val exception = shouldThrow<IllegalArgumentException> {
+                    scheduleService.getSchedule(nonExistentId, userId)
+                }
+                exception.message shouldBe "일정을 찾을 수 없습니다"
+            }
+        }
+
+        When("다른 사용자의 일정에 접근하려고 하면") {
+            val otherUserId = 2L
+            every { scheduleRepository.findByIdAndUserId(scheduleId, otherUserId) } returns null
+
+            Then("IllegalArgumentException 예외가 발생해야 한다") {
+                val exception = shouldThrow<IllegalArgumentException> {
+                    scheduleService.getSchedule(scheduleId, otherUserId)
+                }
+                exception.message shouldBe "일정을 찾을 수 없습니다"
+            }
+        }
+    }
+
     Given("일정 목록 조회를 요청하면") {
         val userId = 1L
         val condition = ScheduleSearchCondition(year = 2024, month = 8, priority = null, isCompleted = false)
